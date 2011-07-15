@@ -49,7 +49,7 @@ public class NioServer implements Runnable {
     try {
       this.selector = this.initSelector();
     } catch (IOException e) {
-      e.printStackTrace();
+		log.error(e.getLocalizedMessage());
         System.exit(0);
     }
     this.worker = worker;
@@ -115,7 +115,7 @@ public class NioServer implements Runnable {
           }
         }
       } catch (Exception e) {
-        e.printStackTrace();
+		log.error(e.getLocalizedMessage());
       }
     }
   }

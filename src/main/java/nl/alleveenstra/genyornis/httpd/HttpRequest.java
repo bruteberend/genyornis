@@ -107,7 +107,7 @@ public class HttpRequest {
             }
             return new String(sb.toString().getBytes());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage());
             return null;
         }
     }

@@ -13,6 +13,8 @@ import nl.alleveenstra.genyornis.httpd.HttpRequest;
 import nl.alleveenstra.genyornis.httpd.HttpResponse;
 import nl.alleveenstra.genyornis.routing.Action;
 import nl.alleveenstra.genyornis.routing.Controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This handler serves static files to the client.
@@ -21,6 +23,8 @@ import nl.alleveenstra.genyornis.routing.Controller;
  */
 @Controller(prefix = "/static/")
 public class Static {
+
+	private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
 
     private static final String INVALID_PATH_MESSAGE = "false";
     private static final String CONTENT_TYPE = "Content-Type";
@@ -89,11 +93,9 @@ public class Static {
             response.getHeaders().put(CONTENT_TYPE, type);
             return data;
         } catch (FileNotFoundException e) {
-            // TODO implement some decent logging, instead of this printStackTrace
-            e.printStackTrace();
+			log.error(e.getLocalizedMessage());
         } catch (IOException e) {
-            // TODO implement some decent logging, instead of this printStackTrace
-            e.printStackTrace();
+			log.error(e.getLocalizedMessage());
         }
         return READ_ERROR.getBytes();
     }
