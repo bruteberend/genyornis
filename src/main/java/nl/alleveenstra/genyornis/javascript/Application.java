@@ -44,6 +44,8 @@ public class Application extends Thread {
     /**
      * Run the JavaScript file.
      */
+
+	@Override
     public void run() {
         cx = contextFactory.enterContext();
         cx.setOptimizationLevel(-1);
@@ -66,16 +68,13 @@ public class Application extends Thread {
                     cx.evaluateString(scope, message, "<cmd>", 1, null);
                     sleep(EVALUATE_TIMEOUT);
                 } catch (Exception e) {
-                    // TODO implement some decent logging
-                    e.printStackTrace();
-                }
+                    log.error(e.getLocalizedMessage());
+	            }
             }
         } catch (FileNotFoundException e) {
-            // TODO implement some decent logging
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage());
         } catch (IOException e) {
-            // TODO implement some decent logging
-            e.printStackTrace();
+			log.error(e.getLocalizedMessage());
         } catch(EvaluatorException e) {
             // Lol exit!
         }
