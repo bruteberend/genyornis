@@ -37,8 +37,8 @@ public class HttpDelegator extends Filter {
                 all_handlers.add(handler);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-        }
+            log.error(e.getLocalizedMessage());
+	    }
     }
 
     /**
@@ -47,6 +47,8 @@ public class HttpDelegator extends Filter {
      * @param request
      * @param response
      */
+
+	@Override
     public void process(Chain chain, HttpContext context, HttpRequest request, HttpResponse response) {
         for (Object handler : all_handlers) {
             Controller accepts = handler.getClass().getAnnotation(Controller.class);
@@ -58,7 +60,7 @@ public class HttpDelegator extends Filter {
                         try {
                             method.invoke(handler, new Object[]{context, request, response});
                         } catch (Exception e) {
-                            e.printStackTrace();
+                           log.error(e.getLocalizedMessage());
                         }
                     }
                 }

@@ -35,7 +35,7 @@ public class VelocityTemplate {
             template.initDocument();
             velocityContext = new VelocityContext();
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error(e.getLocalizedMessage());
         }
     }
 

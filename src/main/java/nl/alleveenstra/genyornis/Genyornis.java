@@ -97,9 +97,9 @@ public class Genyornis {
             InputStream settingsFile = Thread.currentThread().getContextClassLoader().getResourceAsStream("settings.properties");
             properties.load(settingsFile);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error(e.getLocalizedMessage());
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error(e.getLocalizedMessage());
         } finally {
 
         }
