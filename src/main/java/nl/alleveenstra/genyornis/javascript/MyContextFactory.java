@@ -30,6 +30,7 @@ class MyFactory extends ContextFactory {
 	}
 
 	// Override hasFeature(Context, int)
+	@Override
 	public boolean hasFeature(Context cx, int featureIndex) {
 		// Turn on maximum compatibility with MSIE scripts
 		switch (featureIndex) {
