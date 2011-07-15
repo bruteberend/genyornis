@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
-import java.util.Vector;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import nl.alleveenstra.genyornis.Genyornis;
 
@@ -28,7 +29,7 @@ public class Application extends Thread {
     MyFactory contextFactory = new MyFactory();
     private Scriptable scope;
     private File javascript;
-    private Vector<String> messages = new Vector<String>();
+    private Queue<String> messages = new LinkedList<String>();
 
     private long cpuPerSecond = 0;
     private long lastUptime = 0;
@@ -88,10 +89,9 @@ public class Application extends Thread {
      */
     public synchronized String getMessage() throws InterruptedException {
         notify();
-        while (messages.size() == 0)
+        while (messages.isEmpty())
             wait();
-        String message = (String) messages.firstElement();
-        messages.removeElement(message);
+        String message = (String) messages.poll();
         return message;
     }
 
