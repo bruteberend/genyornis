@@ -1,21 +1,10 @@
 package nl.alleveenstra.genyornis.sessions;
 
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-enum AntStatus {
-  INITIALIZING,
-  COMPILING,
-  COPYING,
-  JARRING,
-  ZIPPING,
-  DONE,
-  ERROR
-}
 /**
  * @author alle.veenstra@gmail.com
  */
