@@ -10,13 +10,14 @@ import org.slf4j.LoggerFactory;
  * @author alle.veenstra@gmail.com
  */
 public abstract class ChannelHook {
-    private static final Logger log = LoggerFactory.getLogger(ChannelHook.class);
-  
-  /**
-   * Deliver a messages.
-   * 
-   * @param from
-   * @param message
-   */
+
+	private static final Logger log = LoggerFactory.getLogger(ChannelHook.class);
+
+	/**
+	 * Deliver a messages.
+	 *
+	 * @param from
+	 * @param message
+	 */
 	public abstract void deliver(String from, String message);
 }

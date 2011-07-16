@@ -17,31 +17,31 @@ import nl.alleveenstra.genyornis.httpd.HttpResponse;
  * @author alle.veenstra@gmail.com
  */
 public class SocketHook extends ChannelHook {
-    private static final Logger log = LoggerFactory.getLogger(SocketHook.class);
 
-  private static Map<SocketChannel, SocketHook> instances = new HashMap<SocketChannel, SocketHook>();
-  SocketChannel                                 socket;
+	private static final Logger log = LoggerFactory.getLogger(SocketHook.class);
+	private static Map<SocketChannel, SocketHook> instances = new HashMap<SocketChannel, SocketHook>();
+	SocketChannel socket;
 
-  private SocketHook(SocketChannel socket) {
-    this.socket = socket;
-  }
+	private SocketHook(SocketChannel socket) {
+		this.socket = socket;
+	}
 
-  /**
-   * 
-   * @param socket
-   * @return
-   */
-  public static SocketHook produce(SocketChannel socket) {
-    if (!instances.containsKey(socket))
-      instances.put(socket, new SocketHook(socket));
-    return instances.get(socket);
-  }
+	/**
+	 *
+	 * @param socket
+	 * @return
+	 */
+	public static SocketHook produce(SocketChannel socket) {
+		if (!instances.containsKey(socket)) {
+			instances.put(socket, new SocketHook(socket));
+		}
+		return instances.get(socket);
+	}
 
-  @Override
-  public void deliver(String from, String message) {
-    HttpResponse response = HttpResponse.build();
-    response.setContent(message.getBytes());
-    Genyornis.worker().sendResponse(socket, response);
-  }
-
+	@Override
+	public void deliver(String from, String message) {
+		HttpResponse response = HttpResponse.build();
+		response.setContent(message.getBytes());
+		Genyornis.worker().sendResponse(socket, response);
+	}
 }

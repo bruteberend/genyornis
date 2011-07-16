@@ -16,35 +16,37 @@ import nl.alleveenstra.genyornis.javascript.Application;
  * @author alle.veenstra@gmail.com
  */
 public class ChannelManager {
-    private static final Logger log = LoggerFactory.getLogger(ChannelManager.class);
 
+	private static final Logger log = LoggerFactory.getLogger(ChannelManager.class);
 	HashMap<String, Set<ChannelHook>> channels = new HashMap<String, Set<ChannelHook>>();
-	
 	private static ChannelManager instance = null;
-	
-	private ChannelManager() {}
-	
+
+	private ChannelManager() {
+	}
+
 	/**
 	 * Ensure there is only one channel manager.
 	 * 
 	 * @return a channel manager instance
 	 */
 	public static ChannelManager getInstance() {
-		if (instance == null)
+		if (instance == null) {
 			instance = new ChannelManager();
+		}
 		return instance;
 	}
-	
+
 	/**
 	 * Remove a hook fram a channel
 	 * 
 	 * @param socket
 	 */
 	public void remove(ChannelHook socket) {
-		for (Set<ChannelHook> list : channels.values())
+		for (Set<ChannelHook> list : channels.values()) {
 			list.remove(socket);
+		}
 	}
-	
+
 	/**
 	 * Start listening on a channel as an application.
 	 * 
@@ -53,11 +55,12 @@ public class ChannelManager {
 	 * @param callback
 	 */
 	public void join(String name, Application app, String callback) {
-		if (!channels.containsKey(name))
+		if (!channels.containsKey(name)) {
 			channels.put(name, new HashSet<ChannelHook>());
+		}
 		channels.get(name).add(ApplicationHook.produce(app, callback));
 	}
-	
+
 	/**
 	 * Start listening on a channel as a socket.
 	 * 
@@ -65,11 +68,12 @@ public class ChannelManager {
 	 * @param socket
 	 */
 	public void join(String name, SocketChannel socket) {
-		if (!channels.containsKey(name))
+		if (!channels.containsKey(name)) {
 			channels.put(name, new HashSet<ChannelHook>());
+		}
 		channels.get(name).add(SocketHook.produce(socket));
 	}
-	
+
 	/**
 	 * List all the channels.
 	 * 
@@ -78,7 +82,7 @@ public class ChannelManager {
 	public Set<String> list() {
 		return channels.keySet();
 	}
-	
+
 	/**
 	 * List all the listeners of a channel.
 	 * 
@@ -87,8 +91,9 @@ public class ChannelManager {
 	 * @return a set of channel hooks
 	 */
 	public Set<ChannelHook> list(String name) {
-		if (!channels.containsKey(name))
+		if (!channels.containsKey(name)) {
 			channels.put(name, new HashSet<ChannelHook>());
+		}
 		return channels.get(name);
 	}
 
@@ -99,8 +104,10 @@ public class ChannelManager {
 	 * @param message
 	 */
 	public void send(String name, String message) {
-		if (channels.containsKey(name))
-			for (ChannelHook hook : channels.get(name))
+		if (channels.containsKey(name)) {
+			for (ChannelHook hook : channels.get(name)) {
 				hook.deliver("other", message);
+			}
+		}
 	}
 }
