@@ -21,96 +21,95 @@ import nl.alleveenstra.genyornis.javascript.ApplicationPool;
  * @author alle.veenstra@gmail.com
  */
 public class Genyornis {
-    private static final Logger log = LoggerFactory.getLogger(Genyornis.class);
 
-    private static InetAddress LISTEN_HOST = null;
-    private static int LISTEN_PORT = 8080;
+	private static final Logger log = LoggerFactory.getLogger(Genyornis.class);
+	private static InetAddress LISTEN_HOST = null;
+	private static int LISTEN_PORT = 8080;
+	private static HttpWorker worker = null;
+	private static NioServer server = null;
+	private static ApplicationPool applications = null;
+	private static String applicationFolder = null;
+	public static final String LISTEN_PORT_SETTING = "listen-port";
+	public static final String WEBDATA_FOLDER_SETTING = "webdata-folder";
+	public static final String APPS_FOLDER = "/apps/";
 
-    private static HttpWorker worker = null;
-    private static NioServer server = null;
-    private static ApplicationPool applications = null;
+	public static void main(String[] args) {
+		if (getSettings().contains(WEBDATA_FOLDER_SETTING)) {
+			applicationFolder = getSettings().getProperty(WEBDATA_FOLDER_SETTING);
+		} else {
+			applicationFolder = System.getProperty("user.dir") + "/webdata";
+		}
+		LISTEN_PORT = Integer.parseInt(getSettings().getProperty(LISTEN_PORT_SETTING));
+		applications().deployDirectory(applicationFolder + APPS_FOLDER);
+		new Thread(Genyornis.worker()).start();
+		new Thread(Genyornis.server()).start();
+		log.info("Application started");
+	}
 
-    private static String applicationFolder = null;
-    public static final String LISTEN_PORT_SETTING = "listen-port";
-    public static final String WEBDATA_FOLDER_SETTING = "webdata-folder";
-    public static final String APPS_FOLDER = "/apps/";
+	/**
+	 * Get an instance of the application's application pool.
+	 *
+	 * @return an application pool
+	 */
+	public static ApplicationPool applications() {
+		if (applications == null) {
+			applications = ApplicationPool.getInstance();
+		}
+		return applications;
+	}
 
+	/**
+	 * Get an instance of the application's non-blocking IO server.
+	 *
+	 * @return a non-blocking IO server
+	 */
+	public static NioServer server() {
+		if (server == null) {
+			server = new NioServer(LISTEN_HOST, LISTEN_PORT, worker());
+		}
+		return server;
+	}
 
-    public static void main(String[] args) {
-        if (getSettings().contains(WEBDATA_FOLDER_SETTING)) {
-            applicationFolder = getSettings().getProperty(WEBDATA_FOLDER_SETTING);
-        } else {
-            applicationFolder = System.getProperty("user.dir") + "/webdata";
-        }
-        LISTEN_PORT = Integer.parseInt(getSettings().getProperty(LISTEN_PORT_SETTING));
-        applications().deployDirectory(applicationFolder + APPS_FOLDER);
-        new Thread(Genyornis.worker()).start();
-        new Thread(Genyornis.server()).start();
-        log.info("Application started");
-    }
+	/**
+	 * Get the application's HTTP worker.
+	 *
+	 * @return a HTTP worker
+	 */
+	public static HttpWorker worker() {
+		if (worker == null) {
+			worker = new HttpWorker();
+		}
+		return worker;
+	}
 
-    /**
-     * Get an instance of the application's application pool.
-     *
-     * @return an application pool
-     */
-    public static ApplicationPool applications() {
-        if (applications == null)
-            applications = ApplicationPool.getInstance();
-        return applications;
-    }
+	/**
+	 * Get the channel manager
+	 *
+	 * @return the channel manager
+	 */
+	public static ChannelManager channelManager() {
+		return ChannelManager.getInstance();
+	}
 
-    /**
-     * Get an instance of the application's non-blocking IO server.
-     *
-     * @return a non-blocking IO server
-     */
-    public static NioServer server() {
-        if (server == null)
-            server = new NioServer(LISTEN_HOST, LISTEN_PORT, worker());
-        return server;
-    }
+	public static Properties getSettings() {
+		Properties properties = new Properties();
+		try {
+			InputStream settingsFile = Thread.currentThread().getContextClassLoader().getResourceAsStream("settings.properties");
+			properties.load(settingsFile);
+		} catch (FileNotFoundException e) {
+			log.error(e.getLocalizedMessage());
+		} catch (IOException e) {
+			log.error(e.getLocalizedMessage());
+		} finally {
+		}
+		return properties;
+	}
 
-    /**
-     * Get the application's HTTP worker.
-     *
-     * @return a HTTP worker
-     */
-    public static HttpWorker worker() {
-        if (worker == null)
-            worker = new HttpWorker();
-        return worker;
-    }
+	public static String getApplicationFolder() {
+		return applicationFolder;
+	}
 
-    /**
-     * Get the channel manager
-     *
-     * @return the channel manager
-     */
-    public static ChannelManager channelManager() {
-        return ChannelManager.getInstance();
-    }
-
-    public static Properties getSettings() {
-        Properties properties = new Properties();
-        try {
-            InputStream settingsFile = Thread.currentThread().getContextClassLoader().getResourceAsStream("settings.properties");
-            properties.load(settingsFile);
-        } catch (FileNotFoundException e) {
-            log.error(e.getLocalizedMessage());
-        } catch (IOException e) {
-            log.error(e.getLocalizedMessage());
-        } finally {
-
-        }
-        return properties;
-    }
-
-    public static String getApplicationFolder() {
-        return applicationFolder;
-    }
-
-    public static void setApplicationFolder(final String applicationFolder) {
-        Genyornis.applicationFolder = applicationFolder;
-    }
+	public static void setApplicationFolder(final String applicationFolder) {
+		Genyornis.applicationFolder = applicationFolder;
+	}
 }
