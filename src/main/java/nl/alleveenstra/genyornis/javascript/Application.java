@@ -50,11 +50,11 @@ public class Application extends Thread {
 		scope = cx.initStandardObjects();
 
 		// make the communication channel available in the scope
-		java.lang.Object wrappedPipe = Context.javaToJS(Genyornis.channelManager(), scope);
+		Object wrappedPipe = Context.javaToJS(Genyornis.channelManager(), scope);
 		ScriptableObject.putProperty(scope, "pipe", wrappedPipe);
 
 		// make this application available in this scope
-		java.lang.Object wrappedApplication = Context.javaToJS(this, scope);
+		Object wrappedApplication = Context.javaToJS(this, scope);
 		ScriptableObject.putProperty(scope, "application", wrappedApplication);
 
 		try {
