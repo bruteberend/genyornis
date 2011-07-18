@@ -1,4 +1,5 @@
 package nl.alleveenstra.genyornis.httpd;
+
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,21 +15,17 @@ import nl.alleveenstra.genyornis.sessions.SessionManager;
 
 public class HttpWorker implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpWorker.class);
-	
+	private static final Logger log = LoggerFactory.getLogger(HttpWorker.class);
 	HttpDelegator delegator = new HttpDelegator();
-
 	public static final String HTTP_OK = "200 OK",
 			HTTP_REDIRECT = "301 Moved Permanently",
 			HTTP_FORBIDDEN = "403 Forbidden", HTTP_NOTFOUND = "404 Not Found",
 			HTTP_BADREQUEST = "400 Bad Request",
 			HTTP_INTERNALERROR = "500 Internal Server Error",
 			HTTP_NOTIMPLEMENTED = "501 Not Implemented";
-
 	public static final String MIME_PLAINTEXT = "text/plain",
 			MIME_HTML = "text/html",
 			MIME_DEFAULT_BINARY = "application/octet-stream";
-
 	private List<ServerDataEvent> queue = new LinkedList<ServerDataEvent>();
 
 	public void processData(NioServer server, SocketChannel socket,
@@ -55,22 +52,23 @@ public class HttpWorker implements Runnable {
 				}
 				dataEvent = (ServerDataEvent) queue.remove(0);
 			}
-            HttpContext context = new HttpContext(ApplicationPool.getInstance());
+			HttpContext context = new HttpContext(ApplicationPool.getInstance());
 			HttpRequest request = HttpRequest.build(dataEvent);
 			HttpResponse response = HttpResponse.build();
 
-            Chain chain = new Chain();
-            chain.addFilter(delegator);
-            chain.addFilter(SessionManager.getInstance());
+			Chain chain = new Chain();
+			chain.addFilter(delegator);
+			chain.addFilter(SessionManager.getInstance());
 
 			// set the chain in motion
 			chain.forward(context, request, response);
 
-			if (response.canSend())
+			if (response.canSend()) {
 				sendResponse(request.getSocket(), response);
+			}
 		}
 	}
-	
+
 	public void sendResponse(SocketChannel socket, HttpResponse response) {
 		Genyornis.server().send(socket, response.render());
 	}

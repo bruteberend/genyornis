@@ -9,14 +9,15 @@ import nl.alleveenstra.genyornis.javascript.ApplicationPool;
  * @author alle.veenstra@gmail.com
  */
 public class HttpContext {
-    private static final Logger log = LoggerFactory.getLogger(HttpContext.class);
-    ApplicationPool pool;
 
-    public HttpContext(ApplicationPool pool) {
-        this.pool = pool;
-    }
+	private static final Logger log = LoggerFactory.getLogger(HttpContext.class);
+	ApplicationPool pool;
 
-    public ApplicationPool getPool() {
-        return pool;
-    }
+	public HttpContext(ApplicationPool pool) {
+		this.pool = pool;
+	}
+
+	public ApplicationPool getPool() {
+		return pool;
+	}
 }

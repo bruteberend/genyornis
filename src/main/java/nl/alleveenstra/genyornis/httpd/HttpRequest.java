@@ -11,137 +11,142 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HttpRequest {
-    private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
-    protected SocketChannel socket;
-    protected String method = "";
-    protected String uri = "";
-    protected Session session = null;
-    protected Map<String, String> headers = new HashMap<String, String>();
-    protected Map<String, String> parameters = new HashMap<String, String>();
 
-    private HttpRequest() {
-    }
+	private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
+	protected SocketChannel socket;
+	protected String method = "";
+	protected String uri = "";
+	protected Session session = null;
+	protected Map<String, String> headers = new HashMap<String, String>();
+	protected Map<String, String> parameters = new HashMap<String, String>();
 
-    public static HttpRequest build(ServerDataEvent dataEvent) {
+	private HttpRequest() {
+	}
 
-        HttpRequest request = new HttpRequest();
+	public static HttpRequest build(ServerDataEvent dataEvent) {
 
-        request.socket = dataEvent.socket;
+		HttpRequest request = new HttpRequest();
 
-        StringTokenizer in = new StringTokenizer(new String(dataEvent.data), "\r\n");
+		request.socket = dataEvent.socket;
 
-        // Read the request line
-        String inLine = in.nextToken();
-        if (inLine == null)
-            return request;
-        StringTokenizer st = new StringTokenizer(inLine);
+		StringTokenizer in = new StringTokenizer(new String(dataEvent.data), "\r\n");
 
-        // if ( !st.hasMoreTokens())
-        // sendError( HTTP_BADREQUEST,
-        // "BAD REQUEST: Syntax error. Usage: GET /example/file.html" );
+		// Read the request line
+		String inLine = in.nextToken();
+		if (inLine == null) {
+			return request;
+		}
+		StringTokenizer st = new StringTokenizer(inLine);
 
-        request.method = st.nextToken();
+		// if ( !st.hasMoreTokens())
+		// sendError( HTTP_BADREQUEST,
+		// "BAD REQUEST: Syntax error. Usage: GET /example/file.html" );
 
-        // if ( !st.hasMoreTokens())
-        // sendError( HTTP_BADREQUEST,
-        // "BAD REQUEST: Missing URI. Usage: GET /example/file.html" );
+		request.method = st.nextToken();
 
-        request.uri = st.nextToken();
+		// if ( !st.hasMoreTokens())
+		// sendError( HTTP_BADREQUEST,
+		// "BAD REQUEST: Missing URI. Usage: GET /example/file.html" );
 
-        // Decode parameters from the URI
-        int qmi = request.uri.indexOf('?');
-        if (qmi >= 0) {
-            decodeParms(request.uri.substring(qmi + 1), request.parameters);
-            request.uri = decodePercent(request.uri.substring(0, qmi));
-        } else
-            request.uri = decodePercent(request.uri);
+		request.uri = st.nextToken();
 
-        // If there's another token, it's protocol version,
-        // followed by HTTP headers. Ignore version but parse headers.
-        // NOTE: this now forces header names uppercase since they are
-        // case insensitive and vary by client.
-        if (in.hasMoreTokens()) {
-            String line = in.nextToken();
-            while (line.trim().length() > 0) {
-                int p = line.indexOf(':');
-                request.headers.put(line.substring(0, p).trim().toLowerCase(), line.substring(p + 1).trim());
-                line = (in.hasMoreTokens()) ? in.nextToken() : "";
-            }
-        }
+		// Decode parameters from the URI
+		int qmi = request.uri.indexOf('?');
+		if (qmi >= 0) {
+			decodeParms(request.uri.substring(qmi + 1), request.parameters);
+			request.uri = decodePercent(request.uri.substring(0, qmi));
+		} else {
+			request.uri = decodePercent(request.uri);
+		}
 
-        return request;
-    }
+		// If there's another token, it's protocol version,
+		// followed by HTTP headers. Ignore version but parse headers.
+		// NOTE: this now forces header names uppercase since they are
+		// case insensitive and vary by client.
+		if (in.hasMoreTokens()) {
+			String line = in.nextToken();
+			while (line.trim().length() > 0) {
+				int p = line.indexOf(':');
+				request.headers.put(line.substring(0, p).trim().toLowerCase(), line.substring(p + 1).trim());
+				line = (in.hasMoreTokens()) ? in.nextToken() : "";
+			}
+		}
 
-    private static void decodeParms(String parms, Map<String, String> p) {
-        if (parms == null)
-            return;
+		return request;
+	}
 
-        StringTokenizer st = new StringTokenizer(parms, "&");
-        while (st.hasMoreTokens()) {
-            String e = st.nextToken();
-            int sep = e.indexOf('=');
-            if (sep >= 0)
-                p.put(decodePercent(e.substring(0, sep)).trim(),
-                        decodePercent(e.substring(sep + 1)));
-        }
-    }
+	private static void decodeParms(String parms, Map<String, String> p) {
+		if (parms == null) {
+			return;
+		}
 
-    private static String decodePercent(String str) {
-        try {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < str.length(); i++) {
-                char c = str.charAt(i);
-                switch (c) {
-                    case '+':
-                        sb.append(' ');
-                        break;
-                    case '%':
-                        sb.append((char) Integer.parseInt(str.substring(i + 1,
-                                i + 3), 16));
-                        i += 2;
-                        break;
-                    default:
-                        sb.append(c);
-                        break;
-                }
-            }
-            return new String(sb.toString().getBytes());
-        } catch (Exception e) {
-            log.error(e.getLocalizedMessage());
-            return null;
-        }
-    }
+		StringTokenizer st = new StringTokenizer(parms, "&");
+		while (st.hasMoreTokens()) {
+			String e = st.nextToken();
+			int sep = e.indexOf('=');
+			if (sep >= 0) {
+				p.put(decodePercent(e.substring(0, sep)).trim(),
+						decodePercent(e.substring(sep + 1)));
+			}
+		}
+	}
 
-    public SocketChannel getSocket() {
-        return socket;
-    }
+	private static String decodePercent(String str) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < str.length(); i++) {
+				char c = str.charAt(i);
+				switch (c) {
+					case '+':
+						sb.append(' ');
+						break;
+					case '%':
+						sb.append((char) Integer.parseInt(str.substring(i + 1,
+								i + 3), 16));
+						i += 2;
+						break;
+					default:
+						sb.append(c);
+						break;
+				}
+			}
+			return new String(sb.toString().getBytes());
+		} catch (Exception e) {
+			log.error(e.getLocalizedMessage());
+			return null;
+		}
+	}
 
-    public String getMethod() {
-        return method;
-    }
+	public SocketChannel getSocket() {
+		return socket;
+	}
 
-    public String getUri() {
-        return uri;
-    }
+	public String getMethod() {
+		return method;
+	}
 
-    public Session getSession() {
-        return session;
-    }
+	public String getUri() {
+		return uri;
+	}
 
-    public void setSession(Session session) {
-        this.session = session;
-    }
+	public Session getSession() {
+		return session;
+	}
 
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
+	public void setSession(Session session) {
+		this.session = session;
+	}
 
-    public Map<String, String> getParameters() {
-        return parameters;
-    }
+	public Map<String, String> getHeaders() {
+		return headers;
+	}
 
-    @Override
-    public String toString() {
-        return "HttpRequest [method=" + method + ", uri=" + uri + ", headers=" + headers + ", parameters=" + parameters + "]";
-    }
+	public Map<String, String> getParameters() {
+		return parameters;
+	}
+
+	@Override
+	public String toString() {
+		return "HttpRequest [method=" + method + ", uri=" + uri + ", headers=" + headers + ", parameters=" + parameters + "]";
+	}
 }
