@@ -10,21 +10,23 @@ import java.util.Stack;
  * @author alle.veenstra@gmail.com
  */
 public class Chain {
-    private Stack<Filter> filters;
 
-    public Chain() {
-        filters = new Stack<Filter>();
-    }
+	private Stack<Filter> filters;
 
-    public void addFilter(Filter filter) {
-        filters.push(filter);
-    }
+	public Chain() {
+		filters = new Stack<Filter>();
+	}
 
-    public void forward(HttpContext context, HttpRequest request, HttpResponse response) {
-        if (!filters.empty()) {
-            Filter next = filters.pop();
-            if (next != null)
-                next.process(this, context, request, response);
-        }
-    }
+	public void addFilter(Filter filter) {
+		filters.push(filter);
+	}
+
+	public void forward(HttpContext context, HttpRequest request, HttpResponse response) {
+		if (!filters.empty()) {
+			Filter next = filters.pop();
+			if (next != null) {
+				next.process(this, context, request, response);
+			}
+		}
+	}
 }
