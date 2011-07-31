@@ -51,30 +51,30 @@ public class NioServer implements Runnable {
 	}
 
 	public void send(SocketChannel socket, byte[] data) {
-		synchronized (this.pendingChanges) {
+		synchronized (NioServer.class) {
 			// Indicate we want the interest ops set changed
-			this.pendingChanges.add(new ChangeRequest(socket, ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
+			this.pendingChanges.add(new ChangeRequest(socket, ChangeRequest.CHANGEOPS,
+					SelectionKey.OP_WRITE));
 
 			// And queue the data we want written
-			synchronized (this.pendingData) {
-				List<ByteBuffer> queue = this.pendingData.get(socket);
-				if (queue == null) {
-					queue = new ArrayList<ByteBuffer>();
-					this.pendingData.put(socket, queue);
-				}
-				queue.add(ByteBuffer.wrap(data));
+			List<ByteBuffer> queue = this.pendingData.get(socket);
+			if (queue == null) {
+				queue = new ArrayList<ByteBuffer>();
+				this.pendingData.put(socket, queue);
 			}
+			queue.add(ByteBuffer.wrap(data));
 		}
 
 		// Finally, wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();
 	}
 
+	@Override
 	public void run() {
 		while (true) {
 			try {
 				// Process any pending changes
-				synchronized (this.pendingChanges) {
+				synchronized (NioServer.class) {
 					Iterator<ChangeRequest> changes = this.pendingChanges.iterator();
 					while (changes.hasNext()) {
 						ChangeRequest change = (ChangeRequest) changes.next();
@@ -169,7 +169,7 @@ public class NioServer implements Runnable {
 	private void write(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 
-		synchronized (this.pendingData) {
+		synchronized (NioServer.class) {
 			List<ByteBuffer> queue = this.pendingData.get(socketChannel);
 
 			// Write until there's not more data ...
