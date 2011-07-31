@@ -75,9 +75,7 @@ public class NioServer implements Runnable {
 			try {
 				// Process any pending changes
 				synchronized (NioServer.class) {
-					Iterator<ChangeRequest> changes = this.pendingChanges.iterator();
-					while (changes.hasNext()) {
-						ChangeRequest change = (ChangeRequest) changes.next();
+					for (ChangeRequest change : pendingChanges) {
 						switch (change.type) {
 							case ChangeRequest.CHANGEOPS:
 								SelectionKey key = change.socket.keyFor(this.selector);
@@ -91,11 +89,8 @@ public class NioServer implements Runnable {
 				this.selector.select();
 
 				// Iterate over the set of keys for which events are available
-				Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
-				while (selectedKeys.hasNext()) {
-					SelectionKey key = (SelectionKey) selectedKeys.next();
-					selectedKeys.remove();
-
+				Set<SelectionKey> selectedKeys = this.selector.selectedKeys();
+				for (SelectionKey key : selectedKeys) {
 					if (!key.isValid()) {
 						continue;
 					}
