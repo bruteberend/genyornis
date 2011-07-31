@@ -17,33 +17,37 @@ public class HttpWorker implements Runnable {
 
 	private static final Logger log = LoggerFactory.getLogger(HttpWorker.class);
 	HttpDelegator delegator = new HttpDelegator();
-	public static final String HTTP_OK = "200 OK",
-			HTTP_REDIRECT = "301 Moved Permanently",
-			HTTP_FORBIDDEN = "403 Forbidden", HTTP_NOTFOUND = "404 Not Found",
-			HTTP_BADREQUEST = "400 Bad Request",
-			HTTP_INTERNALERROR = "500 Internal Server Error",
-			HTTP_NOTIMPLEMENTED = "501 Not Implemented";
-	public static final String MIME_PLAINTEXT = "text/plain",
-			MIME_HTML = "text/html",
-			MIME_DEFAULT_BINARY = "application/octet-stream";
+	public static final String HTTP_OK = "200 OK";
+	public static final	String HTTP_REDIRECT = "301 Moved Permanently";
+	public static final	String HTTP_FORBIDDEN = "403 Forbidden";
+	public static final	String HTTP_NOTFOUND = "404 Not Found";
+	public static final	String HTTP_BADREQUEST = "400 Bad Request";
+	public static final	String HTTP_INTERNALERROR = "500 Internal Server Error";
+	public static final	String HTTP_NOTIMPLEMENTED = "501 Not Implemented";
+
+	public static final String MIME_PLAINTEXT = "text/plain";
+	public static final	String MIME_HTML = "text/html";
+	public static final String MIME_DEFAULT_BINARY = "application/octet-stream";
+	
 	private List<ServerDataEvent> queue = new LinkedList<ServerDataEvent>();
 
 	public void processData(NioServer server, SocketChannel socket,
 			char[] data, int count) {
 		char[] dataCopy = new char[count];
 		System.arraycopy(data, 0, dataCopy, 0, count);
-		synchronized (queue) {
+		synchronized (HttpWorker.class) {
 			queue.add(new ServerDataEvent(server, socket, dataCopy));
 			queue.notify();
 		}
 	}
 
+	@Override
 	public void run() {
 		ServerDataEvent dataEvent;
 
 		while (true) {
 			// Wait for data to become available
-			synchronized (queue) {
+			synchronized (HttpWorker.class) {
 				while (queue.isEmpty()) {
 					try {
 						queue.wait();
