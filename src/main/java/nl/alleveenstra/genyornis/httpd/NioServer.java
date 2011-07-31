@@ -89,8 +89,7 @@ public class NioServer implements Runnable {
 				this.selector.select();
 
 				// Iterate over the set of keys for which events are available
-				Set<SelectionKey> selectedKeys = this.selector.selectedKeys();
-				for (SelectionKey key : selectedKeys) {
+				for (SelectionKey key : selector.selectedKeys()) {
 					if (!key.isValid()) {
 						continue;
 					}
