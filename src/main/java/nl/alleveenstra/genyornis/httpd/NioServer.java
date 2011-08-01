@@ -51,30 +51,30 @@ public class NioServer implements Runnable {
 	}
 
 	public void send(SocketChannel socket, byte[] data) {
-		synchronized (NioServer.class) {
+		synchronized (this.pendingChanges) {
 			// Indicate we want the interest ops set changed
-			this.pendingChanges.add(new ChangeRequest(socket, ChangeRequest.CHANGEOPS,
-					SelectionKey.OP_WRITE));
+			this.pendingChanges.add(new ChangeRequest(socket, ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
 
 			// And queue the data we want written
-			List<ByteBuffer> queue = this.pendingData.get(socket);
-			if (queue == null) {
-				queue = new ArrayList<ByteBuffer>();
-				this.pendingData.put(socket, queue);
+			synchronized (this.pendingData) {
+				List<ByteBuffer> queue = this.pendingData.get(socket);
+				if (queue == null) {
+					queue = new ArrayList<ByteBuffer>();
+					this.pendingData.put(socket, queue);
+				}
+				queue.add(ByteBuffer.wrap(data));
 			}
-			queue.add(ByteBuffer.wrap(data));
 		}
 
 		// Finally, wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();
 	}
 
-	@Override
 	public void run() {
 		while (true) {
 			try {
 				// Process any pending changes
-				synchronized (NioServer.class) {
+				synchronized (this.pendingChanges) {
 					for (ChangeRequest change : pendingChanges) {
 						switch (change.type) {
 							case ChangeRequest.CHANGEOPS:
@@ -89,7 +89,11 @@ public class NioServer implements Runnable {
 				this.selector.select();
 
 				// Iterate over the set of keys for which events are available
-				for (SelectionKey key : selector.selectedKeys()) {
+				Iterator<SelectionKey> selectedKeys = this.selector.selectedKeys().iterator();
+				while (selectedKeys.hasNext()) {
+					SelectionKey key = (SelectionKey) selectedKeys.next();
+					selectedKeys.remove();
+
 					if (!key.isValid()) {
 						continue;
 					}
@@ -163,7 +167,7 @@ public class NioServer implements Runnable {
 	private void write(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 
-		synchronized (NioServer.class) {
+		synchronized (this.pendingData) {
 			List<ByteBuffer> queue = this.pendingData.get(socketChannel);
 
 			// Write until there's not more data ...
